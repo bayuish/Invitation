@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Undangan</title>
+
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: black;
+  font-family: Arial, sans-serif;
+}
+
+/* Fullscreen video */
+#videoContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: black;
+  z-index: 10;
+  transition: opacity 1s ease;
+}
+
+#ytVideo {
+  width: 100vw;
+  height: 100vh;
+  border: none;
+  object-fit: cover;
+}
+
+/* QR container */
+#qrContainer {
+  display: none;
+  text-align: center;
+  width: 100%;
+  height: 100vh;
+  background: #f8f8f8;
+  position: relative;
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+
+#qrContainer.active {
+  display: block;
+  opacity: 1;
+}
+
+#qrImage {
+  width: 60vw;
+  max-width: 300px;
+  border-radius: 12px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.3);
+  transform: scale(0);
+  transition: transform 0.8s ease;
+  margin-top: 20vh;
+}
+
+#qrImage.zoom {
+  transform: scale(1);
+}
+
+h3 {
+  color: #333;
+  font-size: 22px;
+  margin-top: 20px;
+}
+
+/* overlay tombol unmute */
+#unmuteOverlay {
+  position: fixed;
+  top:0; left:0;
+  width:100vw; height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index: 20;
+  background: rgba(0,0,0,0.5);
+}
+
+#unmuteBtn {
+  padding: 15px 25px;
+  font-size: 20px;
+  border:none;
+  border-radius:10px;
+  background:#fff;
+  cursor:pointer;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+</style>
+</head>
+<body>
+
+<!-- Fullscreen YouTube -->
+<div id="videoContainer">
+  <iframe id="ytVideo"
+    src="https://www.youtube.com/embed/fDCJtEmlgB0?autoplay=1&mute=1&controls=0&modestbranding=1&playsinline=1"
+    allow="autoplay"
+    allowfullscreen>
+  </iframe>
+</div>
+
+<!-- overlay unmute -->
+<div id="unmuteOverlay">
+  <button id="unmuteBtn">Tap untuk mendengar suara</button>
+</div>
+
+<!-- QR Code -->
+<div id="qrContainer">
+  <h3>Silakan Scan QR Anda</h3>
+  <img id="qrImage" src="" alt="QR Tamu">
+</div>
+
+<!-- Background Musik (opsional) -->
+<audio id="bgMusic" loop>
+  <source src="musik.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+// Durasi video dalam detik
+const durasiVideo = 59;
+
+// Ambil nama dari URL
+const params = new URLSearchParams(window.location.search);
+const nama = params.get("nama") || "DEFAULT";
+
+// elemen
+const videoContainer = document.getElementById("videoContainer");
+const ytVideo = document.getElementById("ytVideo");
+const unmuteOverlay = document.getElementById("unmuteOverlay");
+const unmuteBtn = document.getElementById("unmuteBtn");
+const qrContainer = document.getElementById("qrContainer");
+const qrImage = document.getElementById("qrImage");
+const bgMusic = document.getElementById("bgMusic");
+
+// Tombol unmute
+unmuteBtn.addEventListener("click", () => {
+  // reload iframe dengan mute=0 untuk aktifkan suara
+  const src = ytVideo.src.replace("mute=1", "mute=0");
+  ytVideo.src = src;
+
+  // sembunyikan overlay
+  unmuteOverlay.style.display = "none";
+});
+
+// timer tunggu video selesai
+setTimeout(() => {
+  const fileName = "QR_" + nama.toUpperCase() + ".png";
+  qrImage.src = fileName;
+
+  // fade out video
+  videoContainer.style.opacity = 0;
+
+  setTimeout(() => {
+    videoContainer.style.display = "none";
+
+    // tampilkan QR
+    qrContainer.classList.add("active");
+
+    // efek zoom QR
+    setTimeout(() => {
+      qrImage.classList.add("zoom");
+    }, 300);
+
+    // play background musik jika ada
+    if (bgMusic) {
+      bgMusic.volume = 0.5;
+      bgMusic.play();
+    }
+
+    document.body.style.overflow = "auto";
+  }, 1000);
+
+}, durasiVideo * 1000);
+
+</script>
+</body>
+</html>
